@@ -6,7 +6,7 @@ dateElement.textContent = now.toLocaleDateString('zh-CN', {
     year: 'numeric'
 });
 
-axios.get('./condition', {
+axios.get('./condition/', {
     timeout: 3000
 })
     .then(function(response) {
@@ -38,7 +38,7 @@ const y = ('0' + (ninetyDaysAgo.getMonth() + 1)).slice(-2);
 const r = ('0' + ninetyDaysAgo.getDate()).slice(-2);
 ninetyDaysAgo = n + "-" + y + "-" + r;
 
-let link = `./api/traffic?from=${ninetyDaysAgo}&to=${tomorrow}`;
+let link = `./api/traffic/?from=${ninetyDaysAgo}&to=${tomorrow}`;
 
 axios.get(link, {
     timeout: 3000
@@ -49,13 +49,13 @@ axios.get(link, {
             yl += item.value;
         }
         if (yl < 1048576) {
-            var ll = yl / 1024;
+            let ll = yl / 1024;
             document.getElementById("traffic").innerHTML = ll.toFixed(2) + "KB";
         } else if (yl >= 1048576 && yl < 1073741824) {
-            var ll = yl / 1048576;
+            let ll = yl / 1048576;
             document.getElementById("traffic").innerHTML = ll.toFixed(2) + "MB";
         } else if (yl >= 1073741824) {
-            var ll = yl / 1073741824;
+            let ll = yl / 1073741824;
             document.getElementById("traffic").innerHTML = ll.toFixed(2) + "GB";
         }
     })
@@ -64,7 +64,7 @@ axios.get(link, {
     });
 
 function sendRequest() {
-    let link2 = `./api/traffic?from=${nowtime}&to=${tomorrow}`;
+    let link2 = `./api/traffic/?from=${nowtime}&to=${tomorrow}`;
     axios.get(link2, {
         timeout: 3000
     })
@@ -74,13 +74,13 @@ function sendRequest() {
                 ss += item.value;
             }
             if (ss < 1048576) {
-                var ll = ss / 1024;
+                let ll = ss / 1024;
                 document.getElementById("real_time").innerHTML = ll.toFixed(2) + "KB";
             } else if (ss >= 1048576 && ss < 1073741824) {
-                var ll = ss / 1048576;
+                let ll = ss / 1048576;
                 document.getElementById("real_time").innerHTML = ll.toFixed(2) + "MB";
             } else if (ss >= 1073741824) {
-                var ll = ss / 1073741824;
+                let ll = ss / 1073741824;
                 document.getElementById("real_time").innerHTML = ll.toFixed(2) + "GB";
             }
         })
