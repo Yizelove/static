@@ -6,7 +6,9 @@ dateElement.textContent = now.toLocaleDateString('zh-CN', {
     year: 'numeric'
 });
 
-axios.get('./condition', {})
+axios.get('./condition', {
+    timeout: 3000
+})
     .then(function(response) {
         if (response.data.service === 200) {
             document.querySelector("#status").innerHTML = '正常';
@@ -38,7 +40,9 @@ ninetyDaysAgo = n + "-" + y + "-" + r;
 
 let link = `./api/traffic?from=${ninetyDaysAgo}&to=${tomorrow}`;
 
-axios.get(link, {})
+axios.get(link, {
+    timeout: 3000
+})
     .then(function(response) {
         let yl = 0;
         for (const item of response.data.data) {
@@ -61,7 +65,9 @@ axios.get(link, {})
 
 function sendRequest() {
     let link2 = `./api/traffic?from=${nowtime}&to=${tomorrow}`;
-    axios.get(link2, {})
+    axios.get(link2, {
+        timeout: 3000
+    })
         .then(function(response) {
             let ss = 0;
             for (const item of response.data.data) {
