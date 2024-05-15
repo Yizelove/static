@@ -1,108 +1,78 @@
-const dateElement = document.querySelector('.label');
-const now = new Date();
-dateElement.textContent = now.toLocaleDateString('zh-CN', {
-    month: '2-digit',
-    day: '2-digit',
-    year: 'numeric'
-});
-
-axios.get('./condition/', {
-    timeout: 3000
-})
-    .then(function(response) {
-        if (response.data.service === 200) {
-            document.querySelector("#status").innerHTML = '正常';
-            document.querySelector("#status").style.color = 'green';
-        } else {
-            document.querySelector("#status").innerHTML = '异常';
-            document.querySelector("#status").style.color = 'red';
-        }
-    })
-    .catch(function(error) {
-        console.log(error);
+document.addEventListener('DOMContentLoaded', function() {
+    const dateElement = document.querySelector('.label');
+    const now = new Date();
+    dateElement.textContent = now.toLocaleDateString('zh-CN', {
+        month: '2-digit',
+        day: '2-digit',
+        year: 'numeric'
     });
 
-let nowtime = now.getFullYear() + "-" + ('0' + (now.getMonth() + 1)).slice(-2) + "-" + ('0' + now.getDate()).slice(-2);
+    const updateStatus = (status, color) => {
+        const statusElement = document.querySelector("#status");
+        statusElement.textContent = status;
+        statusElement.style.color = color;
+    };
 
-const nowtimes = new Date();
-nowtimes.setDate(nowtimes.getDate() + 1);
-const year = nowtimes.getFullYear();
-const month = ('0' + (nowtimes.getMonth() + 1)).slice(-2);
-const day = ('0' + nowtimes.getDate()).slice(-2);
-let tomorrow = year + "-" + month + "-" + day;
-
-let ninetyDaysAgo = new Date();
-ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
-const n = ninetyDaysAgo.getFullYear();
-const y = ('0' + (ninetyDaysAgo.getMonth() + 1)).slice(-2);
-const r = ('0' + ninetyDaysAgo.getDate()).slice(-2);
-ninetyDaysAgo = n + "-" + y + "-" + r;
-
-let link = `./api/traffic/?from=${ninetyDaysAgo}&to=${tomorrow}`;
-
-axios.get(link, {
-    timeout: 3000
-})
-    .then(function(response) {
-        let yl = 0;
-        for (const item of response.data.data) {
-            yl += item.value;
-        }
-        if (yl < 1048576) {
-            let ll = yl / 1024;
-            document.getElementById("traffic").innerHTML = ll.toFixed(2) + "KB";
-        } else if (yl >= 1048576 && yl < 1073741824) {
-            let ll = yl / 1048576;
-            document.getElementById("traffic").innerHTML = ll.toFixed(2) + "MB";
-        } else if (yl >= 1073741824) {
-            let ll = yl / 1073741824;
-            document.getElementById("traffic").innerHTML = ll.toFixed(2) + "GB";
-        }
-    })
-    .catch(function(error) {
-        console.log(error);
-    });
-
-function sendRequest() {
-    let link2 = `./api/traffic/?from=${nowtime}&to=${tomorrow}`;
-    axios.get(link2, {
-        timeout: 3000
-    })
-        .then(function(response) {
-            let ss = 0;
-            for (const item of response.data.data) {
-                ss += item.value;
-            }
-            if (ss < 1048576) {
-                let ll = ss / 1024;
-                document.getElementById("real_time").innerHTML = ll.toFixed(2) + "KB";
-            } else if (ss >= 1048576 && ss < 1073741824) {
-                let ll = ss / 1048576;
-                document.getElementById("real_time").innerHTML = ll.toFixed(2) + "MB";
-            } else if (ss >= 1073741824) {
-                let ll = ss / 1073741824;
-                document.getElementById("real_time").innerHTML = ll.toFixed(2) + "GB";
+    axios.get('./condition/', { timeout: 3000 })
+        .then(response => {
+            if (response.data.service === 200) {
+                updateStatus('正常', 'green');
+            } else {
+                updateStatus('异常', 'red');
             }
         })
-        .catch(function(error) {
+        .catch(error => {
             console.log(error);
         });
-}
-setInterval(sendRequest, 3000);
 
-function computeTimeDifference(startDate, endDate) {
-    const diff = endDate - startDate;
-    const diffInMinutes = diff / 60000;
-    const diffInHours = diffInMinutes / 60;
-    const diffInDays = diffInHours / 24;
-    const diffInMonths = diffInDays / 30;
-    const months = Math.floor(diffInMonths);
-    const days = Math.floor(diffInDays % 30);
-    const hours = Math.floor(diffInHours % 24);
-    const minutes = Math.floor(diffInMinutes % 60);
-    return `${months}月${days}天 ${hours}小时${minutes}分`;
-}
-const startDate = new Date(2024, 0, 20, 6, 30);
-const endDate = new Date();
-const timeDifference = computeTimeDifference(startDate, endDate);
-document.querySelector("#total_time").textContent = timeDifference;
+    const formatDate = date => date.toISOString().split('T')[0];
+    const nowtime = formatDate(now);
+    const tomorrow = formatDate(new Date(now.setDate(now.getDate() + 1)));
+    const ninetyDaysAgo = formatDate(new Date(now.setDate(now.getDate() - 90)));
+
+    const fetchTrafficData = (link, elementId) => {
+        axios.get(link, { timeout: 3000 })
+            .then(response => {
+                let totalTraffic = response.data.data.reduce((sum, item) => sum + item.value, 0);
+                let displayTraffic;
+                if (totalTraffic < 1048576) {
+                    displayTraffic = (totalTraffic / 1024).toFixed(2) + "KB";
+                } else if (totalTraffic < 1073741824) {
+                    displayTraffic = (totalTraffic / 1048576).toFixed(2) + "MB";
+                } else {
+                    displayTraffic = (totalTraffic / 1073741824).toFixed(2) + "GB";
+                }
+                document.getElementById(elementId).textContent = displayTraffic;
+            })
+            .catch(error => {
+                console.log(error);
+            });
+    };
+
+    fetchTrafficData(`./api/traffic/?from=${ninetyDaysAgo}&to=${tomorrow}`, "traffic");
+
+    const sendRequest = () => {
+        fetchTrafficData(`./api/traffic/?from=${nowtime}&to=${tomorrow}`, "real_time");
+    };
+    setInterval(sendRequest, 3000);
+
+    const computeTimeDifference = (startDate, endDate) => {
+        const diff = endDate - startDate;
+        const diffDate = new Date(diff);
+        const years = diffDate.getUTCFullYear() - 1970;
+        const months = diffDate.getUTCMonth();
+        const days = diffDate.getUTCDate() - 1;
+        const hours = diffDate.getUTCHours();
+        const minutes = diffDate.getUTCMinutes();
+        return `${years ? years + '年' : ''}${months ? months + '月' : ''}${days}天 ${hours}小时${minutes}分`;
+    };
+
+    const startDate = new Date(2024, 0, 20, 6, 30);
+    const updateTimeDifference = () => {
+        const endDate = new Date();
+        const timeDifference = computeTimeDifference(startDate, endDate);
+        document.querySelector("#total_time").textContent = timeDifference;
+    };
+    updateTimeDifference();
+    setInterval(updateTimeDifference, 60000); // 每分钟更新一次
+});
