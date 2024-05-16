@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
         statusElement.style.color = color;
     };
 
-    axios.get('./condition/', { timeout: 3000 })
+    axios.get('./condition/', { timeout: 30000 })
         .then(response => {
             if (response.data.service === 200) {
                 updateStatus('正常', 'green');
@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const ninetyDaysAgo = formatDate(new Date(now.setDate(now.getDate() - 90)));
 
     const fetchTrafficData = (link, elementId) => {
-        axios.get(link, { timeout: 3000 })
+        axios.get(link, { timeout: 30000 })
             .then(response => {
                 let totalTraffic = response.data.data.reduce((sum, item) => sum + item.value, 0);
                 let displayTraffic;
@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const sendRequest = () => {
         fetchTrafficData(`./api/traffic/?from=${nowtime}&to=${tomorrow}`, "real_time");
     };
-    setInterval(sendRequest, 3000);
+    setInterval(sendRequest, 5000);
 
     const computeTimeDifference = (startDate, endDate) => {
         const diff = endDate - startDate;
